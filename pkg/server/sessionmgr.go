@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/catchkvs/Coral/pkg/config"
 	"github.com/gorilla/websocket"
 	"github.com/speps/go-hashids"
 	"log"
@@ -13,6 +14,26 @@ const(
 	SESSION_ENDED = "ENDED"
 
 )
+
+var store *SessionStore
+// Stores the live session which are currently running in the server
+type SessionStore struct {
+	sessions map[string]*Session
+}
+
+// Check if session is present in session store
+func (store *SessionStore) IsSessionExist(sessionId string) bool {
+	if _, ok:= store.sessions[sessionId]; ok {
+		return true
+	}
+	return false
+}
+
+// Get all sessions.
+func (store *SessionStore) GetAllSessions() map[string]*Session {
+	return store.sessions
+}
+
 
 // Session is started when first user connects to it the server
 // a unique session Id is given to it.
@@ -44,14 +65,14 @@ func makeTimestamp() int64 {
 }
 
 
-// Creates a new session
+// Creates a new session associated with a given connection
 func CreateNewSession(conn *websocket.Conn, tag string) *Session {
 	id := newHashId()
 	userConnect := Connection{id, conn.RemoteAddr().String(), conn}
 	conngroup := ConnectionGroup{userConnect}
 	creationTime := time.Now().Unix()
 	session := Session { id, "",conngroup , "STARTED", 	tag,creationTime, creationTime	}
-	SessionStore[id] = &session
+	store.sessions[id] = &session
 	return &session
 
 }
@@ -68,6 +89,20 @@ func (s *Session) WriteBinary(data []byte, connType int) {
 func (s *Session) WriteText(data []byte, connType int) {
 	s.ConnGroup.UserConnection.Conn.WriteMessage(1, data)
 	log.Println("finished writing to the connection")
+}
+
+
+// Cleanup work to remove stale sessions which runs every 5 mins.
+func CleanupWorker() {
+	for  {
+		for sessionId, session := range store.GetAllSessions() {
+			timeDiff := time.Now().Unix() - session.LastHeartbeatTime
+			if timeDiff > config.GetSessionTimeout() {
+				delete(store.sessions, sessionId)
+			}
+		}
+		time.Sleep(300*time.Second)
+	}
 }
 
 func newHashId() string {
