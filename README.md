@@ -3,6 +3,12 @@ A websocket based server for building real time apps.
 
 
 
+## Running the server
+
+### Using command line
+
+
+### Using docker
 
 
 
