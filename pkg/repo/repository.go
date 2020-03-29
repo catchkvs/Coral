@@ -20,10 +20,10 @@ func SaveDimensionEntity(dimensionEntity *model.DimensionEnty) {
 	AddWithId(config.GetCollectionName(dimensionEntity.Name), dimensionEntity.Id, dimensionEntity)
 }
 
-func getFactEntity(id string) {
+func GetFactEntity(id string) {
 
 }
 
-func getDimensionEntity(id string) {
+func GetDimensionEntity(id string) *model.DimensionEnty{
 
 }

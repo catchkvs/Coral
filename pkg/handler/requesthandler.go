@@ -1,8 +1,11 @@
 package handler
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/catchkvs/Coral/pkg/model"
+	"github.com/catchkvs/Coral/pkg/repo"
 	"github.com/catchkvs/Coral/pkg/server"
 	"github.com/gorilla/websocket"
 	"log"
@@ -58,14 +61,31 @@ func processMessage( msg []byte) {
 			createFactEntity(clientMessage)
 		case server.CMD_UpdateFactEntity:
 			updateFactEntity(clientMessage)
+		case server.CMD_GetRecentEntities:
+			getRecentFactEntities(clientMessage)
+		case server.CMD_GetLiveUpdates:
+			getLiveUpdates(clientMessage)
 		}
 	}
 }
 
 func createFactEntity(clientMessage server.ClientMsg) {
-
+	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
+	var factEntity model.FactEntity
+	json.Unmarshal(decodeFactData, &factEntity)
+	repo.SaveFactEntity(&factEntity)
 }
 
 func updateFactEntity(clientMessage server.ClientMsg) {
+
+}
+
+func getLiveUpdates(clientMessage server.ClientMsg) {
+	session := server.GetSessionStore().GetSession(clientMessage.SessionId)
+	dimensionentity := repo.GetDimensionEntity(clientMessage.Data)
+
+}
+
+func getRecentFactEntities(msg server.ClientMsg) {
 
 }

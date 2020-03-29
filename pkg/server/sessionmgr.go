@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/catchkvs/Coral/pkg/config"
+	"github.com/catchkvs/Coral/pkg/model"
 	"github.com/gorilla/websocket"
 	"github.com/speps/go-hashids"
 	"log"
@@ -16,10 +17,6 @@ const(
 )
 
 var store *SessionStore
-// Stores the live session which are currently running in the server
-type SessionStore struct {
-	sessions map[string]*Session
-}
 
 // Check if session is present in session store
 func IsSessionExist(sessionId string) bool {
@@ -29,40 +26,55 @@ func IsSessionExist(sessionId string) bool {
 	return false
 }
 
+func GetSessionStore() *SessionStore {
+	return store
+}
+
 // Get all sessions.
 func (store *SessionStore) GetAllSessions() map[string]*Session {
 	return store.sessions
 }
 
-
-// Session is started when first user connects to it the server
-// a unique session Id is given to it.
-type Session struct {
-	SessionId string
-	AuthToken string
-    ConnGroup ConnectionGroup
-	State string
-	Tag string
-	CreationTime int64
-	LastHeartbeatTime int64
+func (store *SessionStore) GetSession(sessionId string) *Session {
+	return store.sessions[sessionId]
 }
 
-// Holds the socket connection and a unique id for it.
-type Connection struct {
-	Id string
-	ClientAddr string
-	Conn *websocket.Conn
+// Track a new Dimension Session
+func (store *SessionStore) AddDimensionSession(dimensionId string, session *Session) {
+	allSessions := store.dimensionSessionMap[dimensionId]
+	if len(allSessions) == 10 {
+		log.Println("Already reach maximum sessions for this dimension");
+	}
+	for _, existingSession := range allSessions {
+		if existingSession.SessionId == session.SessionId {
+			log.Println("Session already present ")
+			return
+		}
+	}
+
+	store.dimensionSessionMap[dimensionId] = append(store.dimensionSessionMap[dimensionId], session)
 }
 
-// Connetion Group is to hold multiple connection
-type ConnectionGroup struct {
-	UserConnection Connection
+func (store *SessionStore) AddFactChannel(dimensionId string, channel chan *model.FactEntity) bool {
+	if _, ok:= store.liveUpdateChannelMap[dimensionId]; ok {
+		return false
+	}
+	store.liveUpdateChannelMap[dimensionId] = channel
+	return true
+}
+
+func (store *SessionStore) IsFactChannelPresent(dimensionId string) bool {
+	if _, ok:= store.liveUpdateChannelMap[dimensionId]; ok {
+		return true
+	}
+	return false;
+}
+
+func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.FactEntity {
+	return make(chan *model.FactEntity, 100)
 }
 
 
-func makeTimestamp() int64 {
-	return time.Now().UnixNano() / int64(time.Second)
-}
 
 
 // Creates a new session associated with a given connection

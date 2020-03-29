@@ -8,10 +8,12 @@ const CMD_Telemetry = "Telemetry"
 const CMD_Auth = "Auth"
 const CMD_Ping = "Ping"
 
-//User commands
+//Client commands
 const (
 	  CMD_CreateFactEntity = "CreateFactEntity"
 	  CMD_UpdateFactEntity = "UpdateFactEntity"
+	  CMD_GetRecentEntities = "GetRecentFactEntities"
+	  CMD_GetLiveUpdates = "GetLiveUpdates"
 )
 
 // Admin commands
