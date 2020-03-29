@@ -26,6 +26,8 @@ const(
 const (
 	CMD_ReceiveSessionId = "ReceiveSessionId"
 	CMD_ReceiveBinaryData = "ReceiveData"
+	CMD_NewFactData = "NewFactData"
+	CMD_RecentFactData = "RecentFactData"
 )
 
 

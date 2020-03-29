@@ -3,13 +3,8 @@ package repo
 import (
 	"github.com/catchkvs/Coral/pkg/config"
 	"github.com/catchkvs/Coral/pkg/model"
-	"log"
 )
 
-func FindRecentFactEntities(restaurantId string) []model.FactEntity {
-
-
-}
 
 func SaveFactEntity(factEntity *model.FactEntity) {
 	AddWithId(factEntity.Name, factEntity.Id, factEntity)
@@ -20,10 +15,16 @@ func SaveDimensionEntity(dimensionEntity *model.DimensionEnty) {
 	AddWithId(config.GetCollectionName(dimensionEntity.Name), dimensionEntity.Id, dimensionEntity)
 }
 
-func GetFactEntity(id string) {
-
+func GetFactEntity(name, id string) *model.FactEntity {
+	docSnapshot := Get(config.GetCollectionName(name), id)
+	var factEntity model.FactEntity
+	docSnapshot.DataTo(&factEntity)
+	return &factEntity
 }
 
-func GetDimensionEntity(id string) *model.DimensionEnty{
-
+func GetDimensionEntity(name , id string) *model.DimensionEnty{
+	docSnapshot := Get(config.GetCollectionName(name), id)
+	var dimensionentity model.DimensionEnty
+	docSnapshot.DataTo(&dimensionentity)
+	return &dimensionentity
 }

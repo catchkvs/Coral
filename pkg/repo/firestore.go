@@ -9,11 +9,19 @@ import (
 )
 
 var client *firestore.Client
+var inMemoryStore map[string] interface{}
 var ctx = context.Background()
 func init() {
-	projectID := config.GetProperty("coral.server.id")
-	// Get a Firestore client.
-	client, _ = firestore.NewClient(ctx, projectID)
+	connector := config.GetProperty("coral.store.connector")
+	if connector == "inmemory" {
+		// TODO: implement inmemory connector
+	} else {
+
+		projectId := config.GetProperty("coral.googlecloud.projectid")
+		// Get a Firestore client.
+		client, _ = firestore.NewClient(ctx, projectId)
+	}
+
 }
 
 func GetClient() *firestore.Client {

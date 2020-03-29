@@ -17,6 +17,14 @@ const(
 )
 
 var store *SessionStore
+func init() {
+	tmp := SessionStore{
+		sessions:             map[string]*Session{},
+		liveUpdateChannelMap: map[string] chan *model.FactEntity {},
+		dimensionSessionMap:  map[string] []*Session{},
+	}
+	store = &tmp
+}
 
 // Check if session is present in session store
 func IsSessionExist(sessionId string) bool {
@@ -70,6 +78,16 @@ func (store *SessionStore) IsFactChannelPresent(dimensionId string) bool {
 	return false;
 }
 
+func (store *SessionStore) GetFactChannel(dimensionId string) chan *model.FactEntity {
+	return store.liveUpdateChannelMap[dimensionId]
+}
+
+func (store *SessionStore) GetDimensionSessions(dimensionId string) []*Session {
+	return store.dimensionSessionMap[dimensionId]
+}
+
+
+
 func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.FactEntity {
 	return make(chan *model.FactEntity, 100)
 }
@@ -90,7 +108,7 @@ func CreateNewSession(conn *websocket.Conn, tag string) *Session {
 }
 
 // write the binary data to the socket
-func (s *Session) WriteBinary(data []byte, connType int) {
+func (s *Session) WriteBinary(data []byte) {
 	log.Println("Start Writing to the connection")
 	s.ConnGroup.UserConnection.Conn.WriteMessage(2, data)
 	log.Println("finished writing to the connection")
@@ -98,7 +116,7 @@ func (s *Session) WriteBinary(data []byte, connType int) {
 }
 
 // Write the text data to the socket
-func (s *Session) WriteText(data []byte, connType int) {
+func (s *Session) WriteText(data []byte) {
 	s.ConnGroup.UserConnection.Conn.WriteMessage(1, data)
 	log.Println("finished writing to the connection")
 }

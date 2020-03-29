@@ -10,10 +10,15 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{}
 
+type DimensionConnInput struct {
+	Id string
+	Name string
+}
 
 func Handle(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
@@ -59,10 +64,6 @@ func processMessage( msg []byte) {
 			log.Println("Auth token: " + clientMessage.Data)
 		case server.CMD_CreateFactEntity:
 			createFactEntity(clientMessage)
-		case server.CMD_UpdateFactEntity:
-			updateFactEntity(clientMessage)
-		case server.CMD_GetRecentEntities:
-			getRecentFactEntities(clientMessage)
 		case server.CMD_GetLiveUpdates:
 			getLiveUpdates(clientMessage)
 		}
@@ -74,18 +75,60 @@ func createFactEntity(clientMessage server.ClientMsg) {
 	var factEntity model.FactEntity
 	json.Unmarshal(decodeFactData, &factEntity)
 	repo.SaveFactEntity(&factEntity)
-}
+	store := server.GetSessionStore()
 
-func updateFactEntity(clientMessage server.ClientMsg) {
-
+	// update the channel with fact entity
+	if store.IsFactChannelPresent(factEntity.DimensionId) {
+		channel := store.GetFactChannel(factEntity.DimensionId)
+		channel <- &factEntity
+	}
 }
 
 func getLiveUpdates(clientMessage server.ClientMsg) {
 	session := server.GetSessionStore().GetSession(clientMessage.SessionId)
-	dimensionentity := repo.GetDimensionEntity(clientMessage.Data)
+	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
+	var dimensionConnInput DimensionConnInput
+	json.Unmarshal(decodeFactData, &dimensionConnInput)
+
+	dimensionentity := repo.GetDimensionEntity(dimensionConnInput.Name, dimensionConnInput.Id)
+	store := server.GetSessionStore()
+	if !store.IsFactChannelPresent(dimensionentity.Id) {
+		channel := store.CreateNewFactChannel(dimensionentity.Id)
+		store.AddFactChannel(dimensionentity.Id, channel)
+		go factUpdator(dimensionentity.Id, channel)
+	}
+
+	// Add the session to dimension session mapping
+	store.AddDimensionSession(dimensionentity.Id, session)
 
 }
 
-func getRecentFactEntities(msg server.ClientMsg) {
+func factUpdator(dimensionId string, factChannel chan *model.FactEntity) {
+	log.Println("Starting Order Updator....")
+	for {
+		newFact := <-factChannel
+		data, _ := json.Marshal(newFact)
+		store := server.GetSessionStore()
+		sessions := store.GetDimensionSessions(dimensionId)
+		for _, session := range sessions {
+			msg := server.ServerMsg{
+				Command:   server.CMD_NewFactData,
+				Data:      string(data),
+				SessionId: session.SessionId,
+			}
+			msgData, err := json.Marshal(msg)
+			HandleError(err)
+			session.WriteText(msgData)
 
+		}
+		time.Sleep(10*time.Millisecond)
+	}
+}
+
+
+func HandleError(err error) {
+	if err != nil {
+		log.Println("handling error::::", err)
+
+	}
 }
