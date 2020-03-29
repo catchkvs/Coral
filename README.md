@@ -2,6 +2,9 @@
 A websocket based server for building real time apps.
 
 
+This is current in Development
+
+
 
 ## Running the server
 
