@@ -46,6 +46,31 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func processMessage(message []byte) {
+func processMessage( msg []byte) {
+	clientMessage := server.ClientMsg{}
+	json.Unmarshal(msg, &clientMessage)
+	//log.Println(clientMessage);
+	if server.IsSessionExist(clientMessage.SessionId) {
+		switch cmd := clientMessage.Command; cmd {
+		case server.CMD_Auth:
+			log.Println("Auth token: " + clientMessage.Data)
+		case server.CMD_StartConversation:
+			StartConversation(clientMessage)
+		case server.CMD_SendChunk:
+			ProcessChunk(clientMessage)
+		case server.CMD_CreateFactEntity:
+			createFactEntity(clientMessage)
+		case server.CMD_UpdateFactEntity:
+			updateFactEntity(clientMessage)
+
+		}
+	}
+}
+
+func createFactEntity(clientMessage server.ClientMsg) {
+
+}
+
+func updateFactEntity(clientMessage server.ClientMsg) {
 
 }

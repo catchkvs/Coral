@@ -22,7 +22,7 @@ type SessionStore struct {
 }
 
 // Check if session is present in session store
-func (store *SessionStore) IsSessionExist(sessionId string) bool {
+func IsSessionExist(sessionId string) bool {
 	if _, ok:= store.sessions[sessionId]; ok {
 		return true
 	}

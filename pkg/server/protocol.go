@@ -10,8 +10,9 @@ const CMD_Ping = "Ping"
 
 //User commands
 const (
-
-	)
+	  CMD_CreateFactEntity = "CreateFactEntity"
+	  CMD_UpdateFactEntity = "UpdateFactEntity"
+)
 
 // Admin commands
 const(
