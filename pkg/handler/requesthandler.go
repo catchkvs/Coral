@@ -73,6 +73,7 @@ func processMessage( msg []byte) {
 }
 
 func createFactEntity(clientMessage server.ClientMsg) {
+	log.Println("creating a fact entity...")
 	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
 	var factEntity model.FactEntity
 	json.Unmarshal(decodeFactData, &factEntity)
