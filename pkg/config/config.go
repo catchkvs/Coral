@@ -31,3 +31,7 @@ func GetProperty(key string) string {
 func GetSessionTimeout() int64 {
 	return int64(PROPERTIES.MustGetInt("coral.session.timeout"))
 }
+
+func GetCollectionName(name string) string {
+	return PROPERTIES.MustGet("coral.firestore.collection."+ name);
+}

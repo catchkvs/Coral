@@ -3,6 +3,7 @@ package model
 // Store your fact data like order, trips etc.
 type FactEntity struct {
 	Id string
+	Name string
 	DimensionId string
 	Status string
 	Attributes map[string] interface{}
