@@ -9,10 +9,11 @@ import (
 )
 
 func main() {
+	log.Println("Starting the server...")
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/session", handler.Handle)
-	http.HandleFunc("/ping", ping)
+	http.HandleFunc("/", ping)
 	go server.CleanupWorker()
 	log.Fatal(http.ListenAndServe(":4040", nil))
 }

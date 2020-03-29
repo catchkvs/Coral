@@ -21,6 +21,7 @@ type DimensionConnInput struct {
 }
 
 func Handle(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handle connection")
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	c, err := upgrader.Upgrade(w, r, nil)
 	session := server.CreateNewSession(c, "Tag1")
@@ -55,9 +56,10 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func processMessage( msg []byte) {
+
 	clientMessage := server.ClientMsg{}
 	json.Unmarshal(msg, &clientMessage)
-	//log.Println(clientMessage);
+	log.Println(clientMessage);
 	if server.IsSessionExist(clientMessage.SessionId) {
 		switch cmd := clientMessage.Command; cmd {
 		case server.CMD_Auth:

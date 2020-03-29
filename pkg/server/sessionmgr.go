@@ -97,6 +97,7 @@ func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.
 
 // Creates a new session associated with a given connection
 func CreateNewSession(conn *websocket.Conn, tag string) *Session {
+	log.Println("creating a new session...")
 	id := newHashId()
 	userConnect := Connection{id, conn.RemoteAddr().String(), conn}
 	conngroup := ConnectionGroup{userConnect}
