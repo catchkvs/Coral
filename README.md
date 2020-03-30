@@ -11,6 +11,8 @@ This is current in Development
 
 
 ## Running the server
+Below instructions have been tested on Ubuntu.
+MAC and windows operating system users might have to changes things according to their Operating System guidelines.
 
 ### Using command line
 
