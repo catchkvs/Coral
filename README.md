@@ -13,9 +13,12 @@ This is current in Development
 
 ### Using docker
 
-### Demo through client.html
+### Demo
+In this demo we are showing on one side if we user is placing an order and there are two devices installed in restaurant. Both of those devices are getting updates.
 
 ![coral_demo](https://user-images.githubusercontent.com/60743403/77870912-add9d980-7210-11ea-8694-63e5155d9f6b.gif)
+
+For full demo you can see it on youtube: https://www.youtube.com/watch?v=wfMiPu1FEJk
 
 ## Use-case
 If you have use case for a server which is maintaining lot of persitent connection to lot of devices. 
