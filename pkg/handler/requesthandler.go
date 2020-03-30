@@ -8,7 +8,9 @@ import (
 	"github.com/catchkvs/Coral/pkg/repo"
 	"github.com/catchkvs/Coral/pkg/server"
 	"github.com/gorilla/websocket"
+	"github.com/speps/go-hashids"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -73,15 +75,17 @@ func processMessage( msg []byte) {
 }
 
 func createFactEntity(clientMessage server.ClientMsg) {
-	log.Println("creating a fact entity...")
 	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
 	var factEntity model.FactEntity
 	json.Unmarshal(decodeFactData, &factEntity)
+	factEntity.Id = newFactId()
+	log.Println("creating a fact entity...", factEntity)
 	repo.SaveFactEntity(&factEntity)
 	store := server.GetSessionStore()
 
 	// update the channel with fact entity
 	if store.IsFactChannelPresent(factEntity.DimensionId) {
+		log.Println("Updating the channel...")
 		channel := store.GetFactChannel(factEntity.DimensionId)
 		channel <- &factEntity
 	}
@@ -92,10 +96,11 @@ func getLiveUpdates(clientMessage server.ClientMsg) {
 	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
 	var dimensionConnInput DimensionConnInput
 	json.Unmarshal(decodeFactData, &dimensionConnInput)
-
+	log.Println("Live updates for dimensionConnInput", dimensionConnInput)
 	dimensionentity := repo.GetDimensionEntity(dimensionConnInput.Name, dimensionConnInput.Id)
 	store := server.GetSessionStore()
 	if !store.IsFactChannelPresent(dimensionentity.Id) {
+		log.Println("Creating a fact channel...")
 		channel := store.CreateNewFactChannel(dimensionentity.Id)
 		store.AddFactChannel(dimensionentity.Id, channel)
 		go factUpdator(dimensionentity.Id, channel)
@@ -128,6 +133,22 @@ func factUpdator(dimensionId string, factChannel chan *model.FactEntity) {
 	}
 }
 
+func newFactId() string {
+	var hd = hashids.NewData()
+	hd.Salt = "fact entity"
+	h, err := hashids.NewWithData(hd)
+	HandleError(err)
+	now := time.Now()
+	year := now.Year()
+	month := int(now.Month())
+	day := now.Day()
+	hour := now.Hour()
+	minute := now.Minute()
+	second := now.Second()
+	rand.Seed(time.Now().UnixNano())
+	id, _ := h.Encode([]int{year, month, day, hour, minute, second, rand.Intn(1000)})
+	return "O_"+ id
+}
 
 func HandleError(err error) {
 	if err != nil {

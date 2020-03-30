@@ -8,9 +8,12 @@ $( document ).ready(function() {
     var dimensionSessionId1;
     var dimensionSessionId2;
 
-    function placeOrder() {
-        console.log("Placing order:")
-    }
+    $('body').on('click', '.js-place-order', function(event){
+        console.log(" place order+++++");
+        event.preventDefault();
+        placeNewOrder();
+
+    });
 
     factWS.onmessage = function(event) {
         console.log(event.data);
@@ -43,7 +46,7 @@ $( document ).ready(function() {
 
     function placeNewOrder() {
         var fact = {
-            Name : "Order",
+            Name : "order",
             DimensionId : "123",
             Attributes: {
                 "CustomerName": "Dummy",
@@ -89,6 +92,10 @@ $( document ).ready(function() {
                 };
                 dimensionWS1.send(JSON.stringify(msg));
                 break;
+            case "NewFactData":
+                console.log("New fact data");
+                $("#device_1").html("<strong>Success!</strong> Indicates a successful or positive action.");
+                $("#device_1").show();
         }
     }
 
@@ -128,15 +135,18 @@ $( document ).ready(function() {
                     AuthToken : authToken,
                     command: "GetLiveUpdates",
                 };
-                dimensionSessionId2.send(JSON.stringify(msg));
+                dimensionWS2.send(JSON.stringify(msg));
                 break;
+            case "NewFactData":
+                console.log("New fact data");
+                $("#device_2").html("<strong>Success!</strong> Indicates a successful or positive action.");
+                $("#device_2").show();
         }
     }
 
     dimensionWS2.onopen = function() {
         console.log("clientWebSocket.onopen", dimensionWS2);
         console.log("clientWebSocket.readyState", "websocketstatus");
-        sendMessageWithCommand("123", "GetLiveUpdates")
     }
 
     dimensionWS2.onclose = function(error) {
