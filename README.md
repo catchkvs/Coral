@@ -5,6 +5,10 @@ A websocket based server for building real time apps.
 This is current in Development
 
 
+## Requirements
+1. golang > 1.12
+2. Google cloud account
+
 
 ## Running the server
 
@@ -14,9 +18,15 @@ This is current in Development
 2. From the Coral directory run the command
      
      
-       go build -o server pkg/coral.go
+       go build -o coral pkg/coral.go
     
-3.     
+3. Set the Google cloud credential file with command
+
+         export GOOGLE_APPLICATION_CREDENTIALS=<PATH_TO_CREDENTIAL_FILE>
+         
+4. Run the build binary file. By default this would pick dev properties file. which you have to change.
+       
+         ./coral
 
 ### Using docker
 
