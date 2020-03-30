@@ -10,6 +10,11 @@ This is current in Development
 
 ### Using command line
 
+1. clone the repository.
+2. From the Coral directory run the command
+    go build -o server pkg/coral.go
+    
+3.     
 
 ### Using docker
 
