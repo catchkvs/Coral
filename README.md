@@ -1,5 +1,16 @@
 # Coral
-A websocket based server for building real time apps.
+A websocket based server for building real time apps. This is specifically focusing on Apps which require the Fact Table notifications to be sent to Dimension side consumer.
+One example is:
+  Order update notifications to restaurants.
+
+
+## Features
+
+1. Simple to operate. Built in docker image.
+2. Completely open source so easy to customize for your own Fact and Dimensions Table.
+3. Complete support for cloud environment.
+4. Session Management (expiry and multiple concurrent session handling)
+5. Achieves low latency through go channels and routine support.
 
 
 This is current in Development
