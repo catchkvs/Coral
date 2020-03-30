@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/speps/go-hashids"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -148,7 +149,14 @@ func newHashId() string {
 	hour := now.Hour()
 	minute := now.Minute()
 	second := now.Second()
-	id, _ := h.Encode([]int{year, month, day, hour, minute, second})
+	randomness := rand.Int()
+	rand.Seed(time.Now().UnixNano())
+	a := []int {year, month, day, hour, minute, second, randomness}
+	for i := len(a) - 1; i > 0; i-- { // Fisher–Yates shuffle
+		j := rand.Intn(i + 1)
+		a[i], a[j] = a[j], a[i]
+	}
+	id, _ := h.Encode(a)
 	return id
 }
 

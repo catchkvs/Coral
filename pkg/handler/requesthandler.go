@@ -12,10 +12,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
 var upgrader = websocket.Upgrader{}
+var mux sync.Mutex
 
 type DimensionConnInput struct {
 	Id string
@@ -88,26 +90,31 @@ func createFactEntity(clientMessage server.ClientMsg) {
 		log.Println("Updating the channel...")
 		channel := store.GetFactChannel(factEntity.DimensionId)
 		channel <- &factEntity
+		log.Println("Written to fact channel")
 	}
 }
 
 func getLiveUpdates(clientMessage server.ClientMsg) {
+	mux.Lock()
 	session := server.GetSessionStore().GetSession(clientMessage.SessionId)
 	decodeFactData, _ := b64.StdEncoding.DecodeString(clientMessage.Data)
 	var dimensionConnInput DimensionConnInput
 	json.Unmarshal(decodeFactData, &dimensionConnInput)
 	log.Println("Live updates for dimensionConnInput", dimensionConnInput)
 	dimensionentity := repo.GetDimensionEntity(dimensionConnInput.Name, dimensionConnInput.Id)
+	dimensionentity.Id = dimensionConnInput.Id
 	store := server.GetSessionStore()
 	if !store.IsFactChannelPresent(dimensionentity.Id) {
-		log.Println("Creating a fact channel...")
+		log.Println("Creating a fact channel..." , dimensionentity.Id)
 		channel := store.CreateNewFactChannel(dimensionentity.Id)
 		store.AddFactChannel(dimensionentity.Id, channel)
+		log.Println(store.IsFactChannelPresent(dimensionentity.Id))
 		go factUpdator(dimensionentity.Id, channel)
 	}
 
 	// Add the session to dimension session mapping
 	store.AddDimensionSession(dimensionentity.Id, session)
+	mux.Unlock()
 
 }
 
@@ -119,6 +126,7 @@ func factUpdator(dimensionId string, factChannel chan *model.FactEntity) {
 		store := server.GetSessionStore()
 		sessions := store.GetDimensionSessions(dimensionId)
 		for _, session := range sessions {
+			log.Println("Updating the session with id: " , session.SessionId)
 			msg := server.ServerMsg{
 				Command:   server.CMD_NewFactData,
 				Data:      string(data),

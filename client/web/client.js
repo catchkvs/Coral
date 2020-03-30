@@ -7,6 +7,15 @@ $( document ).ready(function() {
     var factSessionId;
     var dimensionSessionId1;
     var dimensionSessionId2;
+    var fact = {
+        Name : "order",
+        DimensionId : "123",
+        Attributes: {
+            "CustomerName": "Dummy",
+            "PhoneNumber": "Dummy",
+        }
+    }
+    $("#input_order").val(JSON.stringify(fact, null, 4));
 
     $('body').on('click', '.js-place-order', function(event){
         console.log(" place order+++++");
@@ -45,16 +54,9 @@ $( document ).ready(function() {
 
 
     function placeNewOrder() {
-        var fact = {
-            Name : "order",
-            DimensionId : "123",
-            Attributes: {
-                "CustomerName": "Dummy",
-                "PhoneNumber": "Dummy",
-            }
-        }
-        console.log(JSON.stringify(fact));
-        var encodedOrder = btoa(JSON.stringify(fact));
+
+        orderInput =  $("#input_order").val();
+        var encodedOrder = btoa(orderInput);
         sendMessageWithCommand(encodedOrder, "CreateFactEntity")
     }
 
@@ -83,6 +85,7 @@ $( document ).ready(function() {
                     Id: "123",
                     Name: "restaurant"
                 }
+                console.log("sessionID:" + dimensionSessionId1);
                 var encodedData = btoa(JSON.stringify(dimensionConnInput));
                 var msg = {
                     data: encodedData,
@@ -94,7 +97,7 @@ $( document ).ready(function() {
                 break;
             case "NewFactData":
                 console.log("New fact data");
-                $("#device_1").html("<strong>Success!</strong> Indicates a successful or positive action.");
+                $("#device_1").html("<strong>New Order!</strong> <br>" + serverMsg.Data);
                 $("#device_1").show();
         }
     }
@@ -129,6 +132,7 @@ $( document ).ready(function() {
                     Name: "restaurant"
                 }
                 var encodedData = btoa(JSON.stringify(dimensionConnInput));
+                console.log("sessionID:" + dimensionSessionId2);
                 var msg = {
                     data: encodedData,
                     SessionId : dimensionSessionId2,
@@ -138,8 +142,8 @@ $( document ).ready(function() {
                 dimensionWS2.send(JSON.stringify(msg));
                 break;
             case "NewFactData":
-                console.log("New fact data");
-                $("#device_2").html("<strong>Success!</strong> Indicates a successful or positive action.");
+                console.log("New fact data Device-2" + serverMsg.Data);
+                $("#device_2").html("<strong>New Order!</strong> <br>" + serverMsg.Data);
                 $("#device_2").show();
         }
     }
