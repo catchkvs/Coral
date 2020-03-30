@@ -17,18 +17,29 @@ This is current in Development
 1. clone the repository.
 2. From the Coral directory run the command
      
-     
        go build -o coral pkg/coral.go
     
 3. Set the Google cloud credential file with command
 
-         export GOOGLE_APPLICATION_CREDENTIALS=<PATH_TO_CREDENTIAL_FILE>
+       export GOOGLE_APPLICATION_CREDENTIALS=<PATH_TO_CREDENTIAL_FILE>
          
 4. Run the build binary file. By default this would pick dev properties file. which you have to change.
        
-         ./coral
-
+       ./coral
+         
+5. Once the server is running you can open the client.html to test the server as showing in demo
 ### Using docker
+1. Clone the repository.
+
+2. Docker file is included just run the command
+    
+           docker build -t coral:1.0 .
+
+3. Once the docker container is build you can run through docker command. Ensure that Google Application credential
+   environment variable is set appropriately.
+   
+4. Now again use the client.html to connect and test it yourself.           
+           
 
 ### Demo
 In this demo we are showing on one side if we user is placing an order and there are two devices installed in restaurant. Both of those devices are getting updates.
