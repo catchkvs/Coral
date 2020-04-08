@@ -2,8 +2,10 @@ package server
 
 import (
 	"github.com/catchkvs/Coral/pkg/config"
+	"github.com/catchkvs/Coral/pkg/metrics"
 	"github.com/catchkvs/Coral/pkg/model"
 	"github.com/gorilla/websocket"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/speps/go-hashids"
 	"log"
 	"math/rand"
@@ -98,6 +100,7 @@ func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.
 
 // Creates a new session associated with a given connection
 func CreateNewSession(conn *websocket.Conn, tag string) *Session {
+	metrics.SessionCounter.With(prometheus.Labels{"session":tag}).Inc()
 	log.Println("creating a new session...")
 	id := newHashId()
 	userConnect := Connection{id, conn.RemoteAddr().String(), conn}
