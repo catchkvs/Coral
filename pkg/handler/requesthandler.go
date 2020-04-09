@@ -154,8 +154,14 @@ func newFactId() string {
 	minute := now.Minute()
 	second := now.Second()
 	rand.Seed(time.Now().UnixNano())
-	id, _ := h.Encode([]int{year, month, day, hour, minute, second, rand.Intn(1000)})
-	return "O_"+ id
+	randomness := rand.Int()
+	a := []int {year, month, day, hour, minute, second, randomness}
+	for i := len(a) - 1; i > 0; i-- { // Fisher–Yates shuffle
+		j := rand.Intn(i + 1)
+		a[i], a[j] = a[j], a[i]
+	}
+	id, _ := h.Encode(a)
+	return id
 }
 
 func HandleError(err error) {

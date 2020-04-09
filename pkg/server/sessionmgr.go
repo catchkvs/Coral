@@ -90,12 +90,9 @@ func (store *SessionStore) GetDimensionSessions(dimensionId string) []*Session {
 }
 
 
-
 func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.FactEntity {
 	return make(chan *model.FactEntity, 100)
 }
-
-
 
 
 // Creates a new session associated with a given connection
@@ -152,8 +149,8 @@ func newHashId() string {
 	hour := now.Hour()
 	minute := now.Minute()
 	second := now.Second()
-	randomness := rand.Int()
 	rand.Seed(time.Now().UnixNano())
+	randomness := rand.Int()
 	a := []int {year, month, day, hour, minute, second, randomness}
 	for i := len(a) - 1; i > 0; i-- { // Fisher–Yates shuffle
 		j := rand.Intn(i + 1)

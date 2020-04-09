@@ -16,10 +16,19 @@ var (
 		},
 		[]string{"session"},
 	)
+
+	MissingChannelCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "missing_channel",
+			Help: "No channel for a given dimension",
+		},
+		[]string{"missing_channel"},
+	)
 )
 
 func init() {
 	// Metrics have to be registered to be exposed:
 	prometheus.MustRegister(SessionDuration)
 	prometheus.MustRegister(SessionCounter)
+	prometheus.MustRegister(MissingChannelCounter)
 }
