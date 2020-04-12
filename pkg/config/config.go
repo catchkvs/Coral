@@ -28,6 +28,10 @@ func GetProperty(key string) string {
 	return PROPERTIES.MustGet(key)
 }
 
+func GetProjectId() string {
+	return GetProperty("coral.googlecloud.projectid")
+}
+
 func GetSessionTimeout() int64 {
 	return int64(PROPERTIES.MustGetInt("coral.session.timeout"))
 }

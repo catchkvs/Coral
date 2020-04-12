@@ -18,7 +18,7 @@ var ctx = context.Background()
 
 
 func init() {
-	projectID := config.GetProperty("coral.googlecloud.projectid")
+	projectID := config.GetProjectId()
 	// Get a Firestore client.
 	client, _ = pubsub.NewClient(ctx, projectID)
 
