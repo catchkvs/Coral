@@ -7,10 +7,18 @@ import (
 	"encoding/json"
 	"github.com/catchkvs/Coral/pkg/config"
 	"log"
+	"time"
 )
 
 var client *pubsub.Client
 var ctx = context.Background()
+var DatawarehouseChannel = make(chan *DataToPublish, 100)
+
+type DataToPublish struct {
+	TopicId string
+	Data interface{}
+	Info DWDatasetInfo
+}
 
 
 func init() {
@@ -47,6 +55,17 @@ func publishToDW(topicID string,  object interface{}, info DWDatasetInfo) (strin
 	}
 	return "", nil
 
+}
+
+
+//Listening to the work coming in to publish to datawarehouse.
+func Worker() {
+	log.Println("Starting listening for messages to publish to datawarehouse")
+	for  {
+		dataToPublish := <- DatawarehouseChannel
+		publishToDW(dataToPublish.TopicId, dataToPublish.Data, dataToPublish.Info)
+		time.Sleep(300*time.Second)
+	}
 }
 
 type DWMessage struct {

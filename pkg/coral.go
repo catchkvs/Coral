@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/catchkvs/Coral/pkg/config"
 	"github.com/catchkvs/Coral/pkg/handler"
+	"github.com/catchkvs/Coral/pkg/publisher"
 	"github.com/catchkvs/Coral/pkg/server"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
@@ -17,6 +19,9 @@ func main() {
 	http.HandleFunc("/", ping)
 	http.Handle("/metrics", promhttp.Handler())
 	go server.CleanupWorker()
+	if config.GetDatawarehousePublisherEnabled() {
+		go publisher.Worker()
+	}
 	log.Fatal(http.ListenAndServe(":4040", nil))
 }
 

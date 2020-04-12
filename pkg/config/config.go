@@ -32,6 +32,10 @@ func GetProjectId() string {
 	return GetProperty("coral.googlecloud.projectid")
 }
 
+func GetDatawarehousePublisherEnabled() bool {
+	return PROPERTIES.GetBool("coral.dwpublisher.enabled", false)
+}
+
 func GetSessionTimeout() int64 {
 	return int64(PROPERTIES.MustGetInt("coral.session.timeout"))
 }
