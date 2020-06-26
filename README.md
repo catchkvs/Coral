@@ -35,12 +35,15 @@ MAC and windows operating system users might have to changes things according to
 3. Set the Google cloud credential file with command
 
        export GOOGLE_APPLICATION_CREDENTIALS=<PATH_TO_CREDENTIAL_FILE>
+       
+4. Go to https://console.cloud.google.com/datastore/setup?project=<GOOGLE_PROJECT> and grant permission for your project
+to access firestore datastore. 
          
-4. Run the build binary file. By default this would pick dev properties file. which you have to change.
+5. Run the build binary file. By default this would pick dev properties file. which you have to change.
        
        ./coral
          
-5. Once the server is running you can open the client.html to test the server as showing in demo
+6. Once the server is running you can open the client.html to test the server as showing in demo
 ### Using docker
 1. Clone the repository.
 
