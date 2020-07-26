@@ -11,6 +11,7 @@ const CMD_Ping = "Ping"
 //Client commands
 const (
 	  CMD_CreateFactEntity = "CreateFactEntity"
+	  CMD_BroadcastFact = "BroadcastFact"
 	  CMD_UpdateFactEntity = "UpdateFactEntity"
 	  CMD_GetRecentEntities = "GetRecentFactEntities"
 	  CMD_GetLiveUpdates = "GetLiveUpdates"

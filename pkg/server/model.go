@@ -10,7 +10,9 @@ import (
 type SessionStore struct {
 	sessions map[string]*Session
 	liveUpdateChannelMap map[string] chan *model.FactEntity
+	BroadcastChannelMap map[string]  chan *model.FactEntity
 	dimensionSessionMap map[string] []*Session
+	factTopicSessionMap map[string] []*Session
 }
 
 

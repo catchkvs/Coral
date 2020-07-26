@@ -9,6 +9,7 @@ import (
 	"github.com/speps/go-hashids"
 	"log"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -20,10 +21,11 @@ const(
 )
 
 var store *SessionStore
+var sessionMutex = sync.RWMutex{}
 func init() {
 	tmp := SessionStore{
 		sessions:             map[string]*Session{},
-		liveUpdateChannelMap: map[string] chan *model.FactEntity {},
+		liveUpdateChannelMap: map[string] chan *model.FactEntity{},
 		dimensionSessionMap:  map[string] []*Session{},
 	}
 	store = &tmp
@@ -31,6 +33,8 @@ func init() {
 
 // Check if session is present in session store
 func IsSessionExist(sessionId string) bool {
+	sessionMutex.RLock()
+	defer sessionMutex.RUnlock()
 	if _, ok:= store.sessions[sessionId]; ok {
 		return true
 	}
@@ -47,6 +51,8 @@ func (store *SessionStore) GetAllSessions() map[string]*Session {
 }
 
 func (store *SessionStore) GetSession(sessionId string) *Session {
+	sessionMutex.RLock()
+	defer sessionMutex.RUnlock()
 	return store.sessions[sessionId]
 }
 
@@ -66,6 +72,19 @@ func (store *SessionStore) AddDimensionSession(dimensionId string, session *Sess
 	store.dimensionSessionMap[dimensionId] = append(store.dimensionSessionMap[dimensionId], session)
 }
 
+// Track a new Dimension Session
+func (store *SessionStore) AddTopicSubscription(topic, deviceId string, session *Session) {
+	allSessions := store.factTopicSessionMap[topic]
+	for _, existingSession := range allSessions {
+		if existingSession.SessionId == session.SessionId {
+			log.Println("Session already present ")
+			return
+		}
+	}
+
+	store.factTopicSessionMap[topic] = append(store.dimensionSessionMap[topic], session)
+}
+
 func (store *SessionStore) AddFactChannel(dimensionId string, channel chan *model.FactEntity) bool {
 	if _, ok:= store.liveUpdateChannelMap[dimensionId]; ok {
 		return false
@@ -74,24 +93,52 @@ func (store *SessionStore) AddFactChannel(dimensionId string, channel chan *mode
 	return true
 }
 
+func (store *SessionStore) AddTopicChannel(topic string, channel chan *model.FactEntity) bool {
+	if _, ok:= store.BroadcastChannelMap[topic]; ok {
+		return false
+	}
+	store.BroadcastChannelMap[topic] = channel
+	return true
+}
+
 func (store *SessionStore) IsFactChannelPresent(dimensionId string) bool {
 	if _, ok:= store.liveUpdateChannelMap[dimensionId]; ok {
 		return true
 	}
-	return false;
+	return false
 }
+
+func (store *SessionStore) IsTopicChannelPresent(topic string) bool {
+	if _, ok:= store.BroadcastChannelMap[topic]; ok {
+		return true
+	}
+	return false
+}
+
 
 func (store *SessionStore) GetFactChannel(dimensionId string) chan *model.FactEntity {
 	return store.liveUpdateChannelMap[dimensionId]
+}
+
+func (store *SessionStore) GetTopicChannel(topic string) chan *model.FactEntity {
+	return store.BroadcastChannelMap[topic]
 }
 
 func (store *SessionStore) GetDimensionSessions(dimensionId string) []*Session {
 	return store.dimensionSessionMap[dimensionId]
 }
 
+func (store *SessionStore) GetSessionsByFactTopic(factName string) []*Session {
+	return store.factTopicSessionMap[factName]
+}
+
 
 func (store *SessionStore) CreateNewFactChannel(dimensionId string) chan *model.FactEntity {
 	return make(chan *model.FactEntity, 100)
+}
+
+func (store *SessionStore) CreateNewTopicChannel(dimensionId string) chan *model.FactEntity {
+	return make(chan *model.FactEntity, 1000)
 }
 
 
@@ -104,6 +151,8 @@ func CreateNewSession(conn *websocket.Conn, tag string) *Session {
 	conngroup := ConnectionGroup{userConnect}
 	creationTime := time.Now().Unix()
 	session := Session { id, "",conngroup , "STARTED", 	tag,creationTime, creationTime	}
+	sessionMutex.Lock()
+	defer sessionMutex.Unlock()
 	store.sessions[id] = &session
 	return &session
 

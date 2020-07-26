@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/catchkvs/Coral/pkg/broadcast"
 	"github.com/catchkvs/Coral/pkg/config"
 	"github.com/catchkvs/Coral/pkg/handler"
 	"github.com/catchkvs/Coral/pkg/publisher"
@@ -16,6 +17,7 @@ func main() {
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/session", handler.Handle)
+	http.HandleFunc("/broadcast", broadcast.Handle)
 	http.HandleFunc("/", ping)
 	http.Handle("/metrics", promhttp.Handler())
 	go server.CleanupWorker()

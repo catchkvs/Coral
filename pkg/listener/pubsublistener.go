@@ -35,12 +35,12 @@ func ListenFacts() {
 		var fact model.FactEntity;
 		json.Unmarshal(msg.Data, &fact)
 		store := server.GetSessionStore();
-		if store.IsFactChannelPresent(fact.DimensionId) {
-			channel := store.GetFactChannel(fact.DimensionId)
+		if store.IsFactChannelPresent(fact.Dimension.Id) {
+			channel := store.GetFactChannel(fact.Dimension.Id)
 			channel <- &fact
 		} else {
 			log.Println("No channel available for given dimension")
-			metrics.MissingChannelCounter.With(prometheus.Labels{"missing_channel":fact.DimensionId}).Inc()
+			metrics.MissingChannelCounter.With(prometheus.Labels{"missing_channel":fact.Dimension.Id}).Inc()
 		}
 		msg.Ack()
 	})

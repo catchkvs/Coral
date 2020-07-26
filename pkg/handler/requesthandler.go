@@ -86,9 +86,9 @@ func createFactEntity(clientMessage server.ClientMsg) {
 	store := server.GetSessionStore()
 
 	// update the channel with fact entity
-	if store.IsFactChannelPresent(factEntity.DimensionId) {
+	if store.IsFactChannelPresent(factEntity.Dimension.Id) {
 		log.Println("Updating the channel...")
-		channel := store.GetFactChannel(factEntity.DimensionId)
+		channel := store.GetFactChannel(factEntity.Dimension.Id)
 		channel <- &factEntity
 		log.Println("Written to fact channel")
 	}
