@@ -3,6 +3,7 @@ package broadcast
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"github.com/catchkvs/Coral/pkg/metrics"
 	"github.com/catchkvs/Coral/pkg/model"
 	"github.com/catchkvs/Coral/pkg/server"
 	"github.com/gorilla/websocket"
@@ -16,7 +17,7 @@ var mux sync.Mutex
 
 
 func Handle(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handle connection")
+	//log.Println("Handle connection")
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	c, err := upgrader.Upgrade(w, r, nil)
 	session := server.CreateNewSession(c, "Tag1")
@@ -41,7 +42,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("message type: %s", mt)
+		//log.Printf("message type: %s", mt)
 		if mt == 2 {
 			log.Println("Cannot process binary message right now")
 		} else {
@@ -60,19 +61,25 @@ func processMessage( msg []byte) {
 		case server.CMD_Auth:
 			log.Println("Auth token: " + clientMessage.Data)
 		case server.CMD_BroadcastFact:
+			log.Println("Broadcast fact")
 			broadcastFact(clientMessage)
 		case server.CMD_GetLiveUpdates:
+			metrics.ConnectedDeviceCount.Inc()
 			getLiveUpdates(clientMessage)
 		}
+	} else {
+		log.Println("Session id doesn't exists")
 	}
 }
 
 func broadcastFact(msg server.ClientMsg) {
+	log.Println("Client message: ", msg)
 	decodeFactData, _ := b64.StdEncoding.DecodeString(msg.Data)
 	var factEntity model.FactEntity
 	json.Unmarshal(decodeFactData, &factEntity)
 	store := server.GetSessionStore()
 	channel := store.GetTopicChannel(factEntity.Name)
+	log.Println("channel", channel)
 	channel <- &factEntity
 }
 
@@ -87,7 +94,7 @@ func getLiveUpdates(msg server.ClientMsg) {
 	if !store.IsTopicChannelPresent(subscription.Topic) {
 		log.Println("Creating a topic channel..." , subscription.Topic)
 		channel := store.CreateNewTopicChannel(subscription.Topic)
-		store.AddFactChannel(subscription.Topic, channel)
+		store.AddTopicChannel(subscription.Topic, channel)
 		go BroadcastUpdator(subscription.Topic, channel)
 	}
 
@@ -96,14 +103,16 @@ func getLiveUpdates(msg server.ClientMsg) {
 	mux.Unlock()
 }
 func BroadcastUpdator(topic string, topicChannel chan *model.FactEntity) {
-	log.Println("Starting Order Updator....")
-
+	log.Println("Starting Broadcast Updator....")
 	for {
+		log.Println("Topic channel length: " , len(topicChannel))
 		newFact := <-topicChannel
+		log.Println("Fact to be published: " , newFact)
 		data, _ := json.Marshal(newFact)
 		store := server.GetSessionStore()
 		sessions := store.GetSessionsByFactTopic(topic)
 		for _, session := range sessions {
+			metrics.BroadcastFactUpdateCount.Inc()
 			log.Println("Updating the session with id: " , session.SessionId)
 			msg := server.ServerMsg{
 				Command:   server.CMD_NewFactData,
@@ -115,7 +124,7 @@ func BroadcastUpdator(topic string, topicChannel chan *model.FactEntity) {
 			session.WriteText(msgData)
 
 		}
-		time.Sleep(10*time.Millisecond)
+		time.Sleep(100*time.Millisecond)
 	}
 }
 

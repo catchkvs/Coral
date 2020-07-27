@@ -26,6 +26,8 @@ func init() {
 	tmp := SessionStore{
 		sessions:             map[string]*Session{},
 		liveUpdateChannelMap: map[string] chan *model.FactEntity{},
+		BroadcastChannelMap: map[string]chan *model.FactEntity{},
+		factTopicSessionMap: map[string][]*Session{},
 		dimensionSessionMap:  map[string] []*Session{},
 	}
 	store = &tmp
@@ -110,6 +112,7 @@ func (store *SessionStore) IsFactChannelPresent(dimensionId string) bool {
 
 func (store *SessionStore) IsTopicChannelPresent(topic string) bool {
 	if _, ok:= store.BroadcastChannelMap[topic]; ok {
+		log.Println("Broadcast channel exists.")
 		return true
 	}
 	return false
@@ -145,7 +148,7 @@ func (store *SessionStore) CreateNewTopicChannel(dimensionId string) chan *model
 // Creates a new session associated with a given connection
 func CreateNewSession(conn *websocket.Conn, tag string) *Session {
 	metrics.SessionCounter.With(prometheus.Labels{"session":tag}).Inc()
-	log.Println("creating a new session...")
+	//log.Println("creating a new session...")
 	id := newHashId()
 	userConnect := Connection{id, conn.RemoteAddr().String(), conn}
 	conngroup := ConnectionGroup{userConnect}

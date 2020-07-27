@@ -17,6 +17,18 @@ var (
 		[]string{"session"},
 	)
 
+	ConnectedDeviceCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "coral_connected_devices",
+			Help: "Number of live sessions",
+		})
+
+	BroadcastFactUpdateCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "coral_broadcast_count",
+			Help: "Number of live sessions",
+		})
+
 	MissingChannelCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "missing_channel",
@@ -30,5 +42,7 @@ func init() {
 	// Metrics have to be registered to be exposed:
 	prometheus.MustRegister(SessionDuration)
 	prometheus.MustRegister(SessionCounter)
+	prometheus.MustRegister(BroadcastFactUpdateCount)
+	prometheus.MustRegister(ConnectedDeviceCount)
 	prometheus.MustRegister(MissingChannelCounter)
 }

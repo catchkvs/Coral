@@ -35,7 +35,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	c.WriteMessage(1, msgBytes);
+	c.WriteMessage(1, msgBytes)
 
 	if err != nil {
 		log.Print("upgrade:", err)
